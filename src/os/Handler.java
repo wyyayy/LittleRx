@@ -2,31 +2,35 @@ package os;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * Created by Apple on 2016/10/16.
  */
 public class Handler {
 
-    private Queue<Runnable> queue = new LinkedList<>();
+    private ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(10);
 
-    public synchronized void loop() {
+    public void loop() {
         for (; ; ) {
-            Runnable runnable = queue.poll();
+            Runnable runnable;
+            try {
+                runnable = queue.take();// 没有数据则一直阻塞，直到有数据自动唤醒
+            } catch (InterruptedException e) {
+                return;
+            }
             if (runnable == null) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    return;
-                }
-                continue;
+                return;
             }
             runnable.run();
         }
     }
 
-    public synchronized void post(Runnable runnable) {
-        queue.offer(runnable);
-        notifyAll();
+    public void post(Runnable runnable) {
+        try {
+            queue.put(runnable);// 没有空间则一直阻塞，直到有空间
+        } catch (InterruptedException e) {
+            return;
+        }
     }
 }
