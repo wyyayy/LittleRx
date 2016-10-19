@@ -33,8 +33,20 @@ public class Observable<T> {
         return lift(new OperatorObserveOn<T>(handler));
     }
 
+    public final <R> Observable<R> flatMap(Func1<? super T, ? extends Observable<? extends R>> func) {
+        return merge(map(func));
+    }
+
+    public static <T> Observable<T> just(final T value) {
+        return null;
+    }
+
     public static <T> Observable<T> create(OnSubscribe<T> onSubscribe) {
         return new Observable<>(onSubscribe);
+    }
+
+    public static <T> Observable<T> merge(Observable<? extends Observable<? extends T>> source) {
+        return source.lift(new OperatorMerge<T>());
     }
 
 }

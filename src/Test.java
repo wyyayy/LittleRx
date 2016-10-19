@@ -101,7 +101,32 @@ public class Test {
                     }
                 });
 
+        Observable
+                .create(new OnSubscribe<Integer>() {
+                    @Override
+                    public void call(Subscriber<? super Integer> subscriber) {
+                        System.out.println("create() " + Thread.currentThread());
+                        subscriber.onNext(1);
+                    }
+                })
+                .flatMap(new Func1<Integer, Observable<String>>() {
+                    @Override
+                    public Observable<String> call(Integer integer) {
+                        System.out.println("flatMap() " + Thread.currentThread());
+                        return Observable.just("flatMap" + integer);
+                    }
+                })
+                .subscribe(new Subscriber<String>() {
+                    @Override
+                    public void onNext(String s) {
+                        System.out.println("onNext() " + Thread.currentThread());
+                        System.out.println(s);
+                        System.out.println("-------------------------------------------------------------");
+                    }
+                });
+
         handler.loop();
+
 
     }
 
