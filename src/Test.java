@@ -1,8 +1,8 @@
-import os.Handler;
 import littlerx.Func1;
 import littlerx.Observable;
 import littlerx.OnSubscribe;
 import littlerx.Subscriber;
+import os.Handler;
 
 /**
  * Created by iceGeneral on 2016/10/15.
@@ -25,12 +25,14 @@ public class Test {
                     }
                 });
         System.out.println("-------------------------------------------------------------");
+
+
         Observable
                 .create(new OnSubscribe<Integer>() {
                     @Override
                     public void call(Subscriber<? super Integer> subscriber) {
                         System.out.println("create() " + Thread.currentThread());
-                        subscriber.onNext(1);
+                        subscriber.onNext(2);
                     }
                 })
                 .map(new Func1<Integer, String>() {
@@ -48,12 +50,14 @@ public class Test {
                     }
                 });
         System.out.println("-------------------------------------------------------------");
+
+
         Observable
                 .create(new OnSubscribe<Integer>() {
                     @Override
                     public void call(Subscriber<? super Integer> subscriber) {
                         System.out.println("create() " + Thread.currentThread());
-                        subscriber.onNext(1);
+                        subscriber.onNext(3);
                     }
                 })
                 .map(new Func1<Integer, String>() {
@@ -73,14 +77,54 @@ public class Test {
                     }
                 });
 
-        Handler handler = new Handler();
+
+        Observable
+                .just(4, 5) // or from(new int[]{4, 5})
+                .subscribe(new Subscriber<Integer>() {
+                    @Override
+                    public void onNext(Integer integer) {
+                        System.out.println("onNext() " + Thread.currentThread());
+                        System.out.println(integer);
+                    }
+                });
+        System.out.println("-------------------------------------------------------------");
+
 
         Observable
                 .create(new OnSubscribe<Integer>() {
                     @Override
                     public void call(Subscriber<? super Integer> subscriber) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        subscriber.onNext(6);
+                    }
+                })
+                .flatMap(new Func1<Integer, Observable<String>>() {
+                    @Override
+                    public Observable<String> call(Integer integer) {
+                        return Observable.just("flatMap" + integer, "flatMap7");
+                    }
+                })
+                .subscribe(new Subscriber<String>() {
+                    @Override
+                    public void onNext(String s) {
+                        System.out.println("onNext() " + Thread.currentThread());
+                        System.out.println(s);
+                    }
+                });
+        System.out.println("-------------------------------------------------------------");
+
+
+        Handler handler = new Handler();
+        Observable
+                .create(new OnSubscribe<Integer>() {
+                    @Override
+                    public void call(Subscriber<? super Integer> subscriber) {
                         System.out.println("create() " + Thread.currentThread());
-                        subscriber.onNext(1);
+                        subscriber.onNext(8);
                     }
                 })
                 .observeOn(handler)
@@ -100,33 +144,7 @@ public class Test {
                         System.out.println("-------------------------------------------------------------");
                     }
                 });
-
-        Observable
-                .create(new OnSubscribe<Integer>() {
-                    @Override
-                    public void call(Subscriber<? super Integer> subscriber) {
-                        System.out.println("create() " + Thread.currentThread());
-                        subscriber.onNext(1);
-                    }
-                })
-                .flatMap(new Func1<Integer, Observable<String>>() {
-                    @Override
-                    public Observable<String> call(Integer integer) {
-                        System.out.println("flatMap() " + Thread.currentThread());
-                        return Observable.just("flatMap" + integer);
-                    }
-                })
-                .subscribe(new Subscriber<String>() {
-                    @Override
-                    public void onNext(String s) {
-                        System.out.println("onNext() " + Thread.currentThread());
-                        System.out.println(s);
-                        System.out.println("-------------------------------------------------------------");
-                    }
-                });
-
         handler.loop();
-
 
     }
 

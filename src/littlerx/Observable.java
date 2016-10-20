@@ -37,15 +37,23 @@ public class Observable<T> {
         return merge(map(func));
     }
 
-    public static <T> Observable<T> just(final T value) {
-        return null;
-    }
-
     public static <T> Observable<T> create(OnSubscribe<T> onSubscribe) {
         return new Observable<>(onSubscribe);
     }
 
-    public static <T> Observable<T> merge(Observable<? extends Observable<? extends T>> source) {
+    public static <T> Observable<T> just(final T... values) {
+        return from(values);
+    }
+
+    public static <T> Observable<T> from(T[] array) {
+        return create(new OnSubscribeFromArray<T>(array));
+    }
+
+    public static <T> Observable<T> merge(Observable<? extends T>... sequences) {
+        return merge(from(sequences));
+    }
+
+    private static <T> Observable<T> merge(Observable<? extends Observable<? extends T>> source) {
         return source.lift(new OperatorMerge<T>());
     }
 

@@ -1,11 +1,9 @@
 package os;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
- * Created by Apple on 2016/10/16.
+ * Created by iceGeneral on 2016/10/16.
  */
 public class Handler {
 
