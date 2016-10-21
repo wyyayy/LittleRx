@@ -32,8 +32,8 @@ public final class OperatorZip<R> implements Operator<R, Observable<?>[]> {
         }
 
         @Override
-        public void onNext(Observable[] os) {
-            zipper.start(os);
+        public void onNext(Observable[] observables) {
+            zipper.start(observables);
         }
     }
 
@@ -47,26 +47,25 @@ public final class OperatorZip<R> implements Operator<R, Observable<?>[]> {
             this.zipFunction = zipFunction;
         }
 
-        public void start(Observable[] os) {
-            final int length = os.length;
+        public void start(Observable[] observables) {
+            final int length = observables.length;
             subscribers = new Subscriber[length];
-            for (int i = 0; i < os.length; i++) {
+            for (int i = 0; i < observables.length; i++) {
                 InnerSubscriber subscriber = new InnerSubscriber();
                 subscribers[i] = subscriber;
-                os[i].subscribe(subscriber);
+            }
+            for (int i = 0; i < observables.length; i++) {
+                observables[i].subscribe(subscribers[i]);
             }
         }
 
         private void tick() {
             final int length = subscribers.length;
-            final Object[] vs = new Object[length];
+            final Object[] objs = new Object[length];
             for (int i = 0; i < length; i++) {
                 InnerSubscriber subscriber = (InnerSubscriber) subscribers[i];
-                if (subscriber == null) {
-                    return;
-                }
-                vs[i] = subscriber.queue.peek();
-                if (vs[i] == null) {
+                objs[i] = subscriber.queue.peek();
+                if (objs[i] == null) {
                     return;
                 }
             }
@@ -74,7 +73,7 @@ public final class OperatorZip<R> implements Operator<R, Observable<?>[]> {
                 InnerSubscriber subscriber = (InnerSubscriber) subscribers[i];
                 subscriber.queue.poll();
             }
-            child.onNext(zipFunction.call(vs));
+            child.onNext(zipFunction.call(objs));
         }
 
         final class InnerSubscriber extends Subscriber {
