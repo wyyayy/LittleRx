@@ -41,20 +41,33 @@ public class Observable<T> {
         return new Observable<>(onSubscribe);
     }
 
-    public static <T> Observable<T> just(final T... values) {
-        return from(values);
+    public static <T> Observable<T> just(final T value) {
+        return create(new OnSubscribe<T>() {
+            @Override
+            public void call(Subscriber<? super T> subscriber) {
+                subscriber.onNext(value);
+            }
+        });
+    }
+
+    public static <T> Observable<T> just(final T t1, final T t2) {
+        return from((T[]) new Object[]{t1, t2});
     }
 
     public static <T> Observable<T> from(T[] array) {
         return create(new OnSubscribeFromArray<T>(array));
     }
 
-    public static <T> Observable<T> merge(Observable<? extends T>... sequences) {
-        return merge(from(sequences));
+    public static <T> Observable<T> merge(Observable<? extends T> t1, Observable<? extends T> t2) {
+        return merge(from((Observable<? extends T>[]) new Observable[]{t1, t2}));
     }
 
     private static <T> Observable<T> merge(Observable<? extends Observable<? extends T>> source) {
         return source.lift(new OperatorMerge<T>());
+    }
+
+    public static <T1, T2, R> Observable<R> zip(Observable<? extends T1> o1, Observable<? extends T2> o2, final Func2<? super T1, ? super T2, ? extends R> zipFunction) {
+        return just(new Observable<?>[]{o1, o2}).lift(new OperatorZip<R>(zipFunction));
     }
 
 }
