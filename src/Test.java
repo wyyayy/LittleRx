@@ -5,8 +5,10 @@ import os.Handler;
  * Created by iceGeneral on 2016/10/15.
  */
 public class Test {
-    public static void main(String[] args) {
-
+    public static void main(String[] args) 
+    {
+    	System.out.println("22222222222");    	
+    	
         Observable
                 .create(new OnSubscribe<Integer>() {
                     @Override
